@@ -133,7 +133,7 @@ public:
         else if (p == 15)
             m_child15 = child;
         else if (p > 15)
-            throw std::logic_error("invalid pixel alpha: " + std::to_string(p));
+            throw std::logic_error("invalid pixel alpha: " + std::to_string(static_cast<int>(p)));
         else
         {
             if (!m_children)
@@ -151,7 +151,7 @@ public:
         else if (p == 15)
             return m_child15;
         else if (p > 15)
-            throw std::logic_error("invalid pixel alpha: " + std::to_string(p));
+            throw std::logic_error("invalid pixel alpha: " + std::to_string(static_cast<int>(p)));
         else if (!m_children)
             return nullptr;
         else
@@ -274,7 +274,7 @@ static void fill_tree_suffixes(DictTreeNode *root, DictTreeNode *subtree,
 {
     for (size_t i = 1; i < entry.size(); i++)
     {
-        DictTreeNode *node = find_tree_node(entry.begin() + i, entry.end(), root);
+        DictTreeNode *node = find_tree_node(entry.begin() + static_cast<int>(i), entry.end(), root);
         if (node)
         {
             subtree->SetSuffix(node);
@@ -512,7 +512,7 @@ static encoded_font_t::refstring_t encode_ref_fast(const DataFile::pixels_t &pix
     while (i < end)
     {
         int index;
-        i += walk_tree(tree, pixels.begin() + i, pixels.end(), index, is_glyph);
+        i += walk_tree(tree, pixels.begin() + static_cast<int>(i), pixels.end(), index, is_glyph);
         result.push_back(index);
     }
     
@@ -547,6 +547,7 @@ static bool cmp_dict_coding(const DataFile::dictentry_t &a,
         return false;
 }
 
+size_t estimate_tree_node_count(const std::vector<DataFile::dictentry_t> &dict);
 size_t estimate_tree_node_count(const std::vector<DataFile::dictentry_t> &dict)
 {
     size_t count = DICT_START; // Preallocated entries
@@ -607,7 +608,7 @@ std::unique_ptr<encoded_font_t> encode_font(const DataFile &datafile,
             {
                 auto iter = std::mismatch(decoded->begin(), decoded->end(),
                                           datafile.GetGlyphEntry(i).data.begin());
-                size_t pos = iter.first - decoded->begin();
+                size_t pos = static_cast<std::size_t>(iter.first - decoded->begin());
                 throw std::logic_error("verification of glyph " + std::to_string(i) +
                     " failed at position " + std::to_string(pos));
             }
@@ -658,11 +659,11 @@ std::unique_ptr<DataFile::pixels_t> decode_glyph(
         }
         else if (ref == REF_FILLZEROS)
         {
-            result->resize(fontinfo.max_width * fontinfo.max_height, 0);
+            result->resize(static_cast<std::size_t>(fontinfo.max_width * fontinfo.max_height), 0);
         }
         else if (ref < DICT_START)
         {
-            throw std::logic_error("unknown code: " + std::to_string(ref));
+            throw std::logic_error("unknown code: " + std::to_string(static_cast<int>(ref)));
         }
         else if (ref - DICT_START < (int)encoded.rle_dictionary.size())
         {

@@ -12,6 +12,7 @@ namespace rlefont {
 
 typedef std::mt19937 rnd_t;
 
+std::unique_ptr<DataFile::pixels_t> random_substring(const DataFile &datafile, rnd_t &rnd);
 // Select a random substring among all the glyphs in the datafile.
 std::unique_ptr<DataFile::pixels_t> random_substring(const DataFile &datafile, rnd_t &rnd)
 {
@@ -27,11 +28,12 @@ std::unique_ptr<DataFile::pixels_t> random_substring(const DataFile &datafile, r
     size_t start = dist3(rnd);
     
     std::unique_ptr<DataFile::pixels_t> result;
-    result.reset(new DataFile::pixels_t(pixels.begin() + start,
-                                        pixels.begin() + start + length));
+    result.reset(new DataFile::pixels_t(pixels.begin() + static_cast<int>(start),
+                                        pixels.begin() + static_cast<int>(start) + static_cast<int>(length)));
     return result;
 }
 
+void optimize_worst(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Try to replace the worst dictionary entry with a better one.
 void optimize_worst(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -58,6 +60,7 @@ void optimize_worst(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
     }
 }
 
+void optimize_any(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Try to replace random dictionary entry with another one.
 void optimize_any(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -82,6 +85,7 @@ void optimize_any(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
     }
 }
 
+void optimize_expand(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose, bool binary_only);
 // Try to append or prepend random dictionary entry.
 void optimize_expand(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose, bool binary_only)
 {
@@ -136,6 +140,7 @@ void optimize_expand(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose,
     }
 }
 
+void optimize_trim(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Try to trim random dictionary entry.
 void optimize_trim(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -146,18 +151,18 @@ void optimize_trim(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
     
     if (d.replacement.size() <= 2) return;
     
-    std::uniform_int_distribution<size_t> dist2(0, std::min((int)d.replacement.size() / 2, 5));
+    std::uniform_int_distribution<size_t> dist2(0, static_cast<std::size_t>(std::min((int)d.replacement.size() / 2, 5)));
     size_t start = dist2(rnd);
     size_t end = dist2(rnd);
     
     if (start)
     {
-        d.replacement.erase(d.replacement.begin(), d.replacement.begin() + start);
+        d.replacement.erase(d.replacement.begin(), d.replacement.begin() + static_cast<int>(start));
     }
     
     if (end)
     {
-        d.replacement.erase(d.replacement.end() - end, d.replacement.end() - 1);
+        d.replacement.erase(d.replacement.end() - static_cast<int>(end), d.replacement.end() - 1);
     }
     
     trial.SetDictionaryEntry(index, d);
@@ -177,6 +182,7 @@ void optimize_trim(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
     }
 }
 
+void optimize_refdict(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Switch random dictionary entry to use ref encoding or back to rle.
 void optimize_refdict(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -204,6 +210,7 @@ void optimize_refdict(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose
     }
 }
 
+void optimize_combine(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Combine two random dictionary entries.
 void optimize_combine(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -237,6 +244,7 @@ void optimize_combine(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose
     }
 }
 
+void optimize_encpart(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Pick a random part of an encoded glyph and encode it as a ref dict.
 void optimize_encpart(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -257,8 +265,8 @@ void optimize_encpart(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose
     size_t start = dist3(rnd);
     
     // Decode that part
-    encoded_font_t::refstring_t substr(refstr.begin() + start,
-                                       refstr.begin() + start + length);
+    encoded_font_t::refstring_t substr(refstr.begin() + static_cast<int>(start),
+                                       refstr.begin() + static_cast<int>(start) + static_cast<int>(length));
     std::unique_ptr<DataFile::pixels_t> decoded =
         decode_glyph(*e, substr, datafile.GetFontInfo());
     
@@ -284,6 +292,7 @@ void optimize_encpart(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose
     }
 }
 
+void optimize_pass(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose);
 // Execute all the optimization algorithms once.
 void optimize_pass(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
 {
@@ -297,10 +306,11 @@ void optimize_pass(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose)
     optimize_encpart(datafile, size, rnd, verbose);
 }
 
+void optimize_parallel(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose, int num_threads = 4);
 // Execute multiple passes in parallel and take the one with the best result.
 // The amount of parallelism is hardcoded in order to retain deterministic
 // behaviour.
-void optimize_parallel(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose, int num_threads = 4)
+void optimize_parallel(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbose, int num_threads)
 {
     std::vector<DataFile> datafiles;
     std::vector<size_t> sizes;
@@ -317,22 +327,23 @@ void optimize_parallel(DataFile &datafile, size_t &size, rnd_t &rnd, bool verbos
     for (int i = 0; i < num_threads; i++)
     {
         threads.emplace_back(new std::thread(optimize_pass,
-                                             std::ref(datafiles.at(i)),
-                                             std::ref(sizes.at(i)),
-                                             std::ref(rnds.at(i)),
+                                             std::ref(datafiles.at(static_cast<std::size_t>(i))),
+                                             std::ref(sizes.at(static_cast<std::size_t>(i))),
+                                             std::ref(rnds.at(static_cast<std::size_t>(i))),
                                              verbose));
     }
     
     for (int i = 0; i < num_threads; i++)
     {
-        threads.at(i)->join();
+        threads.at(static_cast<std::size_t>(i))->join();
     }
     
     int best = std::min_element(sizes.begin(), sizes.end()) - sizes.begin();
-    size = sizes.at(best);
-    datafile = datafiles.at(best);
+    size = sizes.at(static_cast<std::size_t>(best));
+    datafile = datafiles.at(static_cast<std::size_t>(best));
 }
 
+void update_scores(DataFile &datafile, bool verbose);
 // Go through all the dictionary entries and check what it costs to remove
 // them. Removes any entries with negative or zero score.
 void update_scores(DataFile &datafile, bool verbose)

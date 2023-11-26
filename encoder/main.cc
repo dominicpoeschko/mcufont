@@ -197,7 +197,7 @@ static status_t cmd_filter(const std::vector<std::string> &args)
         {
             if (!allowed.count(g.chars.at(j)))
             {
-                g.chars.erase(g.chars.begin() + j);
+                g.chars.erase(g.chars.begin() + static_cast<int>(j));
                 j--;
             }
         }
@@ -253,7 +253,7 @@ static status_t cmd_show_glyph(const std::vector<std::string> &args)
     }
     else
     {
-        index = strtol(args.at(2).c_str(), nullptr, 0);
+        index = strtoul(args.at(2).c_str(), nullptr, 0);
     }
     
     if (index >= f->GetGlyphCount())
@@ -309,7 +309,7 @@ static status_t cmd_rlefont_size(const std::vector<std::string> &args)
     std::cout << "Glyph bbox:        " << f->GetFontInfo().max_width << "x"
         << f->GetFontInfo().max_height << " pixels" << std::endl;
     std::cout << "Uncompressed size: " << f->GetGlyphCount() *
-        f->GetFontInfo().max_width * f->GetFontInfo().max_height / 2
+        static_cast<std::size_t>(f->GetFontInfo().max_width) * static_cast<std::size_t>(f->GetFontInfo().max_height) / 2
         << " bytes" << std::endl;
     std::cout << "Compressed size:   " << size << " bytes" << std::endl;
     std::cout << "Bytes per glyph:   " << size / f->GetGlyphCount() << std::endl;
@@ -351,7 +351,7 @@ static status_t cmd_rlefont_optimize(const std::vector<std::string> &args)
         size_t newsize = mcufont::rlefont::get_encoded_size(*f);
         time_t newtime = time(NULL);
         
-        int bytes_per_min = (oldsize - newsize) * 60 / (newtime - oldtime + 1);
+        int bytes_per_min = (oldsize - newsize) * 60 / static_cast<std::size_t>(newtime - oldtime + 1);
         
         i++;
         std::cout << "iteration " << i << ", size " << newsize

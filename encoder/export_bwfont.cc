@@ -32,7 +32,7 @@ static void encode_glyph(const DataFile::glyphentry_t &glyph,
         {
             for (int y = 0; y < fontinfo.max_height; y++)
             {
-                size_t index = y * fontinfo.max_width + x;
+                size_t index = static_cast<std::size_t>(y * fontinfo.max_width + x);
                 if (glyph.data.at(index) >= threshold)
                     num_cols = x + 1;
             }
@@ -40,15 +40,15 @@ static void encode_glyph(const DataFile::glyphentry_t &glyph,
     }
     
     // Write the bits that compose the glyph
-    for (int x = 0; x < num_cols; x++)
+    for (size_t x = 0; x < static_cast<std::size_t>(num_cols); x++)
     {
-        for (int y = 0; y < fontinfo.max_height; y+= 8)
+        for (size_t y = 0; y < static_cast<std::size_t>(fontinfo.max_height); y+= 8)
         {
-            size_t remain = std::min(8, fontinfo.max_height - y);
+            size_t remain = static_cast<std::size_t>(std::min(8, static_cast<int>(static_cast<std::size_t>(fontinfo.max_height) - y)));
             uint8_t byte = 0;
             for (size_t i = 0; i < remain; i++)
             {
-                size_t index = (y + i) * fontinfo.max_width + x;
+                size_t index = (y + i) * static_cast<std::size_t>(fontinfo.max_width) + x;
                 if (glyph.data.at(index) >= threshold)
                 {
                     byte |= (1 << i);
@@ -77,10 +77,10 @@ static void encode_character_range(std::ostream &out,
 {
     std::vector<DataFile::glyphentry_t> glyphs;
     bool constant_width = true;
-    int width = datafile.GetGlyphEntry(range.glyph_indices[0]).width;
+    int width = static_cast<int>(datafile.GetGlyphEntry(static_cast<std::size_t>(range.glyph_indices[0])).width);
     
     // Copy all the glyphs in this range for the purpose of cropping them.
-    for (int glyph_index: range.glyph_indices)
+    for (auto glyph_index: range.glyph_indices)
     {
         if (glyph_index < 0)
         {
@@ -90,7 +90,7 @@ static void encode_character_range(std::ostream &out,
         }
         else
         {
-            auto glyph = datafile.GetGlyphEntry(glyph_index);
+            auto glyph = datafile.GetGlyphEntry(static_cast<std::size_t>(glyph_index));
             glyphs.push_back(glyph);
             
             if (glyph.width != width)
@@ -114,11 +114,11 @@ static void encode_character_range(std::ostream &out,
     }
     
     // Fill in the crop information
-    cropinfo.offset_x = old_fi.baseline_x - new_fi.baseline_x;
-    cropinfo.offset_y = old_fi.baseline_y - new_fi.baseline_y;
-    cropinfo.height_pixels = new_fi.max_height;
+    cropinfo.offset_x = static_cast<std::size_t>(old_fi.baseline_x - new_fi.baseline_x);
+    cropinfo.offset_y = static_cast<std::size_t>(old_fi.baseline_y - new_fi.baseline_y);
+    cropinfo.height_pixels = static_cast<std::size_t>(new_fi.max_height);
     cropinfo.height_bytes = (cropinfo.height_pixels + 7) / 8;
-    cropinfo.width = width;
+    cropinfo.width = static_cast<std::size_t>(width);
     
     // Then format and write out the glyph data
     std::vector<unsigned> offsets;
@@ -129,7 +129,7 @@ static void encode_character_range(std::ostream &out,
     for (const DataFile::glyphentry_t &g : glyphs)
     {
         offsets.push_back(data.size() / stride);
-        widths.push_back(g.width);
+        widths.push_back(static_cast<unsigned int>(g.width));
         encode_glyph(g, new_fi, data, width);
     }    
     offsets.push_back(data.size() / stride);
@@ -165,8 +165,8 @@ void write_source(std::ostream &out, std::string name, const DataFile &datafile)
     
     // Split the characters into ranges
     DataFile::fontinfo_t f = datafile.GetFontInfo();
-    size_t glyph_size = f.max_width * ((f.max_height + 7) / 8);
-    auto get_glyph_size = [=](size_t i) { return glyph_size; };
+    size_t glyph_size = static_cast<std::size_t>(f.max_width * ((f.max_height + 7) / 8));
+    auto get_glyph_size = [=](size_t) { return glyph_size; };
     std::vector<char_range_t> ranges = compute_char_ranges(datafile,
         get_glyph_size, 65536, 16);
 

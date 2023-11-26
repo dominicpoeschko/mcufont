@@ -39,7 +39,7 @@ void wordwrap_vector(std::ostream &out, const std::vector<unsigned> &data,
     out << std::hex << std::setfill('0');
     for (size_t i = 0; i < data.size(); i++)
     {
-        if (i % values_per_column == 0 && i != 0)
+        if (i % static_cast<std::size_t>(values_per_column) == 0 && i != 0)
             out << std::endl << prefix;
         
         out << "0x" << std::setw(width) << (int)data.at(i) << ", ";
@@ -97,7 +97,7 @@ int select_fallback_char(const DataFile &datafile)
     size_t i = 0;
     for (const DataFile::glyphentry_t &g: datafile.GetGlyphTable())
     {
-        for (size_t c: g.chars)
+        for (auto c: g.chars)
         {
             chars.insert(c);
         }
@@ -162,7 +162,7 @@ std::vector<char_range_t> compute_char_ranges(const DataFile &datafile,
             
             // Monitor the amount of the data in the range and split it
             // if it grows too large.
-            data_length += get_encoded_glyph_size(glyph_index);
+            data_length += get_encoded_glyph_size(static_cast<std::size_t>(glyph_index));
             if (data_length > maximum_size)
             {
                 last_char = j - 1;

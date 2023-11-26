@@ -15,7 +15,7 @@ void eliminate_duplicates(std::vector<DataFile::glyphentry_t> &glyphtable)
                 for (int c : glyphtable.at(j).chars)
                     glyphtable.at(i).chars.push_back(c);
                 
-                glyphtable.erase(glyphtable.begin() + j);
+                glyphtable.erase(glyphtable.begin() + static_cast<int>(j));
                 j--;
             }
         }
@@ -60,7 +60,7 @@ void crop_glyphs(std::vector<DataFile::glyphentry_t> &glyphtable,
         {
             for (int x = 0; x < fontinfo.max_width; x++)
             {
-                if (glyph.data.at(y * fontinfo.max_width + x))
+                if (glyph.data.at(static_cast<std::size_t>(y * fontinfo.max_width + x)))
                     bbox.update(x, y);
             }
         }
@@ -70,9 +70,9 @@ void crop_glyphs(std::vector<DataFile::glyphentry_t> &glyphtable,
         return; // There were no glyphs
     
     // Crop the glyphs to that
-    size_t old_w = fontinfo.max_width;
-    size_t new_w = bbox.right - bbox.left + 1;
-    size_t new_h = bbox.bottom - bbox.top + 1;
+    size_t old_w = static_cast<std::size_t>(fontinfo.max_width);
+    size_t new_w = static_cast<std::size_t>(bbox.right - bbox.left + 1);
+    size_t new_h = static_cast<std::size_t>(bbox.bottom - bbox.top + 1);
     for (DataFile::glyphentry_t &glyph : glyphtable)
     {
         if (glyph.data.size() == 0)
@@ -85,8 +85,8 @@ void crop_glyphs(std::vector<DataFile::glyphentry_t> &glyphtable,
         {
             for (size_t x = 0; x < new_w; x++)
             {
-                size_t old_x = bbox.left + x;
-                size_t old_y = bbox.top + y;
+                size_t old_x = static_cast<std::size_t>(bbox.left) + x;
+                size_t old_y = static_cast<std::size_t>(bbox.top) + y;
                 size_t old_pos = old_w * old_y + old_x; 
                 glyph.data.push_back(old.at(old_pos));
             }

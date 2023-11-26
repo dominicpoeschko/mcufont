@@ -160,9 +160,9 @@ std::map<size_t, size_t> DataFile::GetCharToGlyphMap() const
     
     for (size_t i = 0; i < m_glyphtable.size(); i++)
     {
-        for (size_t c: m_glyphtable[i].chars)
+        for (auto c: m_glyphtable[i].chars)
         {
-            char_to_glyph[c] = i;
+            char_to_glyph[static_cast<std::size_t>(c)] = i;
         }
     }
     
@@ -179,7 +179,7 @@ std::string DataFile::GlyphToText(size_t index) const
     {
         for (int x = 0; x < m_fontinfo.max_width; x++)
         {
-            size_t pos = y * m_fontinfo.max_width + x;
+            size_t pos =static_cast<std::size_t>( y * m_fontinfo.max_width + x);
             os << glyphchars[m_glyphtable.at(index).data.at(pos)];
         }
         os << std::endl;
@@ -199,7 +199,7 @@ void DataFile::UpdateLowScoreIndex()
                                  m_dictionary.end(),
                                  comparison);
     
-    m_lowscoreindex = iter - m_dictionary.begin();
+    m_lowscoreindex = static_cast<std::size_t>(iter - m_dictionary.begin());
 }
 
 std::ostream& operator<<(std::ostream& os, const DataFile::pixels_t& str)
@@ -211,7 +211,7 @@ std::ostream& operator<<(std::ostream& os, const DataFile::pixels_t& str)
         else if (p <= 15)
             os << (char)(p - 10 + 'A');
         else
-            throw std::logic_error("invalid pixel alpha: " + std::to_string(p));
+            throw std::logic_error("invalid pixel alpha: " + std::to_string(static_cast<int>(p)));
     }
     return os;
 }

@@ -49,7 +49,7 @@ public:
     _FT_Face(FT_Library lib, const std::vector<char> &data)
     {
         checkFT(FT_New_Memory_Face(lib, (const unsigned char *)&data[0],
-                                   data.size(), 0, &m_face));
+                                   static_cast<int>(data.size()), 0, &m_face));
     }
     ~_FT_Face() { checkFT(FT_Done_Face(m_face)); }
     operator FT_Face() { return m_face; }
@@ -68,7 +68,7 @@ static void readfile(std::istream &file, std::vector<char> &data)
         size_t oldsize = data.size();
         data.resize(oldsize + blocksize);
         file.read(&data[oldsize], blocksize);
-        data.resize(oldsize + file.gcount());
+        data.resize(static_cast<std::size_t>(oldsize + static_cast<std::size_t>(file.gcount())));
     }
 }
 
@@ -80,7 +80,7 @@ std::unique_ptr<DataFile> LoadFreetype(std::istream &file, int size, bool bw)
     _FT_Library lib;
     _FT_Face face(lib, data);
     
-    checkFT(FT_Set_Pixel_Sizes(face, size, size));
+    checkFT(FT_Set_Pixel_Sizes(face, static_cast<unsigned int>(size), static_cast<unsigned int>(size)));
     
     DataFile::fontinfo_t fontinfo = {};
     std::vector<DataFile::glyphentry_t> glyphtable;
@@ -125,9 +125,9 @@ std::unique_ptr<DataFile> LoadFreetype(std::istream &file, int size, bool bw)
         DataFile::glyphentry_t glyph;
         glyph.width = (face->glyph->advance.x + 32) / 64;
         glyph.chars.push_back(charcode);
-        glyph.data.resize(fontinfo.max_width * fontinfo.max_height);
+        glyph.data.resize(static_cast<std::size_t>(fontinfo.max_width * fontinfo.max_height));
         
-        int w = face->glyph->bitmap.width;
+        int w = static_cast<int>(face->glyph->bitmap.width);
         int dw = fontinfo.max_width;
         int dx = fontinfo.baseline_x + face->glyph->bitmap_left;
         int dy = fontinfo.baseline_y - face->glyph->bitmap_top;
@@ -137,19 +137,19 @@ std::unique_ptr<DataFile> LoadFreetype(std::istream &file, int size, bool bw)
          * them inside the box in order not to crash.. */
         if (dy < 0)
             dy = 0;
-        if (dy + face->glyph->bitmap.rows > fontinfo.max_height)
-            dy = fontinfo.max_height - face->glyph->bitmap.rows;
+        if (static_cast<int>(static_cast<std::size_t>(dy) + face->glyph->bitmap.rows) > fontinfo.max_height)
+            dy = static_cast<std::size_t>(fontinfo.max_height) - face->glyph->bitmap.rows;
         
-        size_t s = face->glyph->bitmap.pitch;
-        for (int y = 0; y < face->glyph->bitmap.rows; y++)
+        size_t s = static_cast<std::size_t>(face->glyph->bitmap.pitch);
+        for (int y = 0; y < static_cast<int>(face->glyph->bitmap.rows); y++)
         {
-            for (int x = 0; x < face->glyph->bitmap.width; x++)
+            for (int x = 0; x < static_cast<int>(face->glyph->bitmap.width); x++)
             {
-                size_t index = (y + dy) * dw + x + dx;
+                size_t index = static_cast<std::size_t>((y + dy) * dw + x + dx);
                 
                 if (face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
                 {
-                    uint8_t byte = face->glyph->bitmap.buffer[s * y + x / 8];
+                    uint8_t byte = face->glyph->bitmap.buffer[s * static_cast<std::size_t>(y) + static_cast<std::size_t>(x / 8)];
                     byte <<= x % 8;
                     glyph.data.at(index) = (byte & 0x80) ? 15 : 0;
                 }

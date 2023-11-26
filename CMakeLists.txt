@@ -7,7 +7,6 @@ endif()
 if(NOT CMAKE_CROSSCOMPILING)
   project(mcufont VERSION 0.1.0)
 
-
   include(cmake_helpers/BuildOptions.cmake)
   include(cmake_helpers/FindOrFetch.cmake)
 
@@ -27,6 +26,8 @@ if(NOT CMAKE_CROSSCOMPILING)
     encoder/importtools.cc
     encoder/main.cc
     encoder/optimize_rlefont.cc)
+
+  target_add_default_build_options(mcufont_generator PRIVATE)
   target_include_directories(mcufont_generator PRIVATE encoder)
   target_link_libraries(mcufont_generator Freetype::Freetype Threads::Threads)
 else()
@@ -162,16 +163,16 @@ function(mcufont_generate targetname)
     endif()
   endif()
 
-  set(incname ${CMAKE_CURRENT_BINARY_DIR}/generated/mcufont)
+  set(incname ${CMAKE_CURRENT_BINARY_DIR}/mcufont_generated)
   set(dname ${incname}/fonts)
   set(oname ${dname}/${targetname}.h)
 
   get_target_property(build_dir mcufont_generator BINARY_DIR)
 
-  if(NOT MCUFONT_CROSSCOMPILING)
+  if(NOT CMAKE_CROSSCOMPILING)
     set(mcufont_generator_bin ${build_dir}/mcufont_generator)
   else()
-    set(mcufont_generator_bin ${build_dir}/build/mcufont_generator)
+    set(mcufont_generator_bin ${build_dir}/host_build/mcufont_generator)
   endif()
 
   set(generate_script ${CMAKE_CURRENT_LIST_DIR}/mcufont/tools/generate.py)

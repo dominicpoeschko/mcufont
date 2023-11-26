@@ -59,7 +59,7 @@ static bool parse_glyph(std::istream &file, DataFile::glyphentry_t &glyph,
     
     // Initialize the character contents to all 0 with proper size.
     glyph.data.clear();
-    glyph.data.resize(fontinfo.max_width * fontinfo.max_height, 0);
+    glyph.data.resize(static_cast<std::size_t>(fontinfo.max_width * fontinfo.max_height), 0);
     
     int bbx_w = fontinfo.max_width;
     int bbx_h = fontinfo.max_height;
@@ -108,12 +108,12 @@ static bool parse_glyph(std::istream &file, DataFile::glyphentry_t &glyph,
         
         for (int x = 0; x < bbx_w; x++)
         {
-            int nibble = hextoint(line.at(x / 4));
+            int nibble = hextoint(line.at(static_cast<std::size_t>(x / 4)));
             uint8_t pixel = 0;
             if (nibble & (8 >> (x % 4)))
                 pixel = 15;
             
-            glyph.data.at(y * fontinfo.max_width + x0 + x) = pixel;
+            glyph.data.at(static_cast<std::size_t>(y * fontinfo.max_width + x0 + x)) = pixel;
         }
         
         y++;

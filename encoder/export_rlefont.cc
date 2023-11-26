@@ -18,7 +18,7 @@ namespace rlefont {
 // Generates tables dictionary_data and dictionary_offsets.
 static void encode_dictionary(std::ostream &out,
                               const std::string &name,
-                              const DataFile &datafile,
+                              const DataFile &,
                               const encoded_font_t &encoded)
 {
     std::vector<unsigned> offsets;
@@ -55,9 +55,9 @@ static void encode_character_range(std::ostream &out,
     
     for (int glyph_index : range.glyph_indices)
     {
-        if (already_encoded.count(glyph_index))
+        if (already_encoded.count(static_cast<std::size_t>(glyph_index)))
         {
-            offsets.push_back(already_encoded[glyph_index]);
+            offsets.push_back(already_encoded[static_cast<std::size_t>(glyph_index)]);
         }
         else
         {
@@ -66,14 +66,14 @@ static void encode_character_range(std::ostream &out,
             
             if (glyph_index >= 0)
             {
-                r = encoded.glyphs[glyph_index];
-                width = datafile.GetGlyphEntry(glyph_index).width;
+                r = encoded.glyphs[static_cast<std::size_t>(glyph_index)];
+                width = datafile.GetGlyphEntry(static_cast<std::size_t>(glyph_index)).width;
             }
             
             offsets.push_back(data.size());
-            already_encoded[glyph_index] = data.size();
+            already_encoded[static_cast<std::size_t>(glyph_index)] = data.size();
             
-            data.push_back(width);
+            data.push_back(static_cast<unsigned int>(width));
             data.insert(data.end(), r.begin(), r.end());
         }
     }
