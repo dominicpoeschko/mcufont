@@ -62,7 +62,7 @@ function(mcufont_add_library target)
   target_include_directories(${target}_mcufont PUBLIC mcufont/decoder)
   target_include_directories(
     ${target}_mcufont
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/generated/mcufont/${target})
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/mcufont_generated/${target})
 
   get_target_property(target_options ${target} COMPILE_OPTIONS)
 
@@ -78,7 +78,7 @@ function(mcufont_add_library target)
 
   configure_file(
     "${CMAKE_ROOT}/Modules/CMakeConfigurableFile.in"
-    ${CMAKE_CURRENT_BINARY_DIR}/generated/mcufont/${target}/fonts.h @ONLY)
+    ${CMAKE_CURRENT_BINARY_DIR}/mcufont_generated/${target}/fonts.h @ONLY)
   unset(CMAKE_CONFIGURABLE_FILE_CONTENT)
 
   set(CMAKE_CONFIGURABLE_FILE_CONTENT
@@ -104,7 +104,7 @@ function(mcufont_add_library target)
 
   configure_file(
     "${CMAKE_ROOT}/Modules/CMakeConfigurableFile.in"
-    ${CMAKE_CURRENT_BINARY_DIR}/generated/mcufont/${target}/fonts.hpp @ONLY)
+    ${CMAKE_CURRENT_BINARY_DIR}/mcufont_generated/${target}/fonts.hpp @ONLY)
   unset(CMAKE_CONFIGURABLE_FILE_CONTENT)
 
   target_link_libraries(${target} ${target}_mcufont)
