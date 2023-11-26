@@ -1,7 +1,7 @@
 /* Tiny library for rendering compressed bitmap fonts on microcontrollers. */
 
-#ifndef _MCUFONT_H_
-#define _MCUFONT_H_
+#ifndef MCUFONT_H_
+#define MCUFONT_H_
 
 #include "mf_config.h"
 #include "mf_encoding.h"

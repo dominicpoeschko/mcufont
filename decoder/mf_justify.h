@@ -2,8 +2,8 @@
  * alignment and justify. Supports tab stops and kerning.
  */
 
-#ifndef _MF_JUSTIFY_H_
-#define _MF_JUSTIFY_H_
+#ifndef MF_JUSTIFY_H_
+#define MF_JUSTIFY_H_
 
 #include "mf_rlefont.h"
 #include <stdbool.h>

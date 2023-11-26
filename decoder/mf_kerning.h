@@ -3,18 +3,18 @@
  * character pairs, like WA or L'.
  */
 
-#ifndef _MF_KERNING_H_
-#define _MF_KERNING_H_
+#ifndef MF_KERNING_H_
+#define MF_KERNING_H_
 
 #include "mf_config.h"
 #include "mf_rlefont.h"
 
 /* Compute the kerning adjustment when c1 is followed by c2.
- *
+ * 
  * font: Pointer to the font definition.
  * c1: The previous character.
  * c2: The next character to render.
- *
+ * 
  * Returns the offset to add to the x position for c2.
  */
 #if MF_USE_KERNING
@@ -25,3 +25,4 @@ MF_EXTERN int8_t mf_compute_kerning(const struct mf_font_s *font,
 #endif
 
 #endif
+

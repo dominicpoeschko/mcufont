@@ -1,7 +1,7 @@
 /* Configuration constants for mcufont. */
 
-#ifndef _MF_CONFIG_H_
-#define _MF_CONFIG_H_
+#ifndef MF_CONFIG_H_
+#define MF_CONFIG_H_
 
 #ifdef __AVR__
   #include <avr/pgmspace.h>
@@ -32,7 +32,7 @@
 /* Encoding for the input data.
  * With the unicode encodings, the library supports the range of unicode
  * characters 0x0000-0xFFFF (the Basic Multilingual Plane).
- *
+ * 
  * ASCII: Plain ascii (somewhat works with ISO8859-1 also)
  * UTF8:  UTF8 encoding (variable number of bytes)
  * UTF16: UTF16 encoding (2 bytes per character, compatible with UCS-2)
@@ -43,7 +43,7 @@
 #define MF_ENCODING_UTF16 2
 #define MF_ENCODING_WCHAR 3
 #ifndef MF_ENCODING
-#define MF_ENCODING MF_ENCODING_UTF8
+#define MF_ENCODING MF_ENCODING_ASCII
 #endif
 
 
@@ -78,7 +78,7 @@
  * 'm' character in the current font.
  */
 #ifndef MF_TABSIZE
-#define MF_TABSIZE 8
+#define MF_TABSIZE 4
 #endif
 
 
